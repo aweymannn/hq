@@ -3,8 +3,6 @@ name: Deploy to Cloudflare Workers
 on:
   push:
     branches: [main]
-  schedule:
-    - cron: '0 4 * * *'
   workflow_dispatch:
 
 jobs:
@@ -22,28 +20,14 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Regenerate schedule.ics
-        run: node generate_ics.js
-
-      - name: Commit updated ICS if changed
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add schedule.ics
-          git diff --staged --quiet || git commit -m "chore: refresh schedule.ics [skip ci]"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build HQ (dashboard) bundle
         run: node build-kova.js
 
-      - name: Deploy to Cloudflare Workers
+      - name: Deploy legacy origin (Forager's Atlas + redirects to HQ)
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # v4 supports deploying a static-assets-only Worker (no main script)
           wranglerVersion: '4'
           command: deploy
 

@@ -37,6 +37,18 @@ jobs:
           assert isinstance(c.get('bitcoin'),(int,float)) and c['bitcoin']>0, 'no BTC quote: '+json.dumps(d)
           print('✓ quotes live — NVDA', q['NVDA'], '· VOO', q.get('VOO'), '· BTC', c['bitcoin'])"
 
+      - name: Legacy origin (Atlas + redirects + retired feed)
+        run: |
+          set -e
+          B="https://wc2026-tracker.aarondweymann.workers.dev"
+          A=$(curl -sL -o /dev/null -w "%{http_code}" "$B/foraging.html"); echo "/foraging.html → $A"; [ "$A" = "200" ]
+          for p in "/" "/kova.html"; do
+            LOC=$(curl -s -o /dev/null -w "%{redirect_url}" "$B$p"); echo "$p → $LOC"
+            echo "$LOC" | grep -q "hq.aarondweymann.workers.dev"
+          done
+          I=$(curl -s -o /dev/null -w "%{http_code}" "$B/schedule.ics"); echo "/schedule.ics → $I"; [ "$I" = "410" ]
+          echo "✓ legacy origin behaves"
+
       - name: Mercury relay guards (no token → 400, bad token → passthrough 401)
         run: |
           set -e
