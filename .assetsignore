@@ -8,8 +8,9 @@ node_modules
 .assetsignore
 .wrangler
 *.md
-generate_ics.js
 worker.js
+kova*
+feeds-api.js
 sync-api.js
 kova-worker.js
 build-kova.js
